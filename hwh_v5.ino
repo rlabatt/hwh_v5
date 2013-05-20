@@ -25,8 +25,8 @@ int relayPin = 7;               // relay that switches the pump
 int pumpLed = 13;               // pump in operation LED indicator pin
 
 //decide how long the pump should run and how log between pump cycles
-int pumpRun = 5000;             // milli-seconds the pump runs for
-int pumpWait = 15000;           // milli-seconds the pump waits between run times
+int pumpRun = 2000;             // milli-seconds the pump runs for
+int pumpWait = 5000;           // milli-seconds the pump waits between run times
 
 //define variables to store motion and pump values
 int motionSensor_1_val;         //master bathroom motion sensor
@@ -42,91 +42,76 @@ void set_all_low();             //sets all pins to low
 void pump_status_print();       //prints the pump status to the serial port
 void time_of_day_operation();   //used to turn on the pump at a certain time of day (e.g., first thing in the morning)
 
-void setup() {
-  //open serial port
-  Serial.begin(9600);
-  
-
-  pinMode (motionSensor_1, INPUT);
-  pinMode (motionSensor_2, INPUT);
-  pinMode (motionSensor_3, INPUT);
-  pinMode (relayPin, OUTPUT);
-  pinMode (pumpLed, OUTPUT);
-  set_all_low();                //set pins to low initially
-}
+void setup()
+  {
+    //open serial port
+    Serial.begin(9600);
+    
+    pinMode (motionSensor_1, INPUT);
+    pinMode (motionSensor_2, INPUT);
+    pinMode (motionSensor_3, INPUT);
+    pinMode (relayPin, OUTPUT);
+    pinMode (pumpLed, OUTPUT);
+    set_all_low();                //set pins to low initially
+  }
 
 void loop() 
-{  
-  Serial.println("initial settings:");
-  Serial.println(">>>>>>>>>>>>>>>>>>>");
-  print_status();
-  Serial.println(">>>>>>>>>>>>>>>>>>>");
-  
-  
-  // run the pump if any IR sensor has sensed a trigger i.e. it is set to HIGH
-  if ( digitalRead(motionSensor_1) || digitalRead(motionSensor_2) || digitalRead(motionSensor_3) == HIGH ) 
-  {
-    // turn on the pump in operation LED and the pump
-    digitalWrite (pumpLed, HIGH);
-    digitalWrite (relayPin, HIGH);
+  {  
+    Serial.println(">>>>>>>>>>>>>>>>>>>");
     
-    print_status();
+    status();
+
+    Serial.println(">>>>>>>>>>>>>>>>>>>");
     
-    delay (pumpRun);        //leave pump on for set time "pumpRun"
-    Serial.print("Pump run period: ");
-    pump_status_print();
-    set_all_low();          //turn off pump, pump in operation LED
-    Serial.print("Pump waiting for water temp decay period of ") & pumpWait/1000 & (" seconds.");
-    pump_status_print(); 
-    delay (pumpWait);       //do not turn pump on again until a time period has passed
-    Serial.print("Pump ready period: ");
-    pump_status_print();
-    Serial.println
-  }  
-}
-
-void set_all_low()    //set all pins to low
-{
-  digitalWrite (motionSensor_1 && motionSensor_2 && motionSensor_3, LOW);
-  digitalWrite (relayPin, LOW);
-  digitalWrite (pumpLed, LOW);
-}
-
-void print_status()    //read the set values and print to screen
-{
-  Serial.print("Motion sensor 1 on Pin 2 reads: ");
-  Serial.println(digitalRead(motionSensor_1));      
-  Serial.print("Motion sensor 2 on Pin 3 reads: ");
-  Serial.println(digitalRead(motionSensor_2));
-  Serial.print("Motion sensor 3 on Pin 4 reads: ");
-  Serial.println(digitalRead(motionSensor_3));
-  Serial.print("Pump relay reads: ");
-  Serial.println(digitalRead(relayPin));
-  Serial.print("Pump LED reads: ");
-  Serial.println(digitalRead(pumpLed));
-  pump_status_print();
-  delay (2000);
-}
-
-void pump_status_print()      //read and print the pump status
-  {
-  if (digitalRead(motionSensor_1) || digitalRead(motionSensor_2) || digitalRead(motionSensor_2) == HIGH)
+    // run the pump if any IR sensor has sensed a trigger i.e. it is set to HIGH
+    if ( digitalRead(motionSensor_1) || digitalRead(motionSensor_2) || digitalRead(motionSensor_3) == HIGH ) 
     {
-      Serial.println("Pump is On");
-    }
-    else
-    {
-      Serial.println("Pump is off");
-    }
-    Serial.println(">>>>>");
-}
-
-void time_of_day_operation()    //run the pump first thing in the morning
-  {
-    if (time >= "0600" && < "0700")               // turn on the pump in operation LED and the pump
-      {
+      // turn on the pump in operation LED and the pump
       digitalWrite (pumpLed, HIGH);
       digitalWrite (relayPin, HIGH);
-      }
-    delay(until time > "0700")                    // let the pump run until 7AM
+      Serial.println("Pump now ON");
+      status();
+      
+      delay (pumpRun);        //leave pump on for set time "pumpRun"
+      
+      status();
+
+      set_all_low();          //turn off pump, pump in operation LED
+
+      Serial.println("Pump now OFF");
+      
+      //Serial.print("Pump waiting for water temp decay period of ") & pumpWait/1000 & (" seconds.");
+      
+      status();
+
+      delay (pumpWait);       //do not turn pump on again until a time period has passed
+      
+      status();
+
+      Serial.println(">>>>>>>>>>>>>>>>>>>");
+    }  
+  }
+
+void set_all_low()    //set all pins to low
+  {
+    digitalWrite (motionSensor_1, LOW);
+    digitalWrite (motionSensor_2, LOW);
+    digitalWrite (motionSensor_3, LOW);
+    digitalWrite (relayPin, LOW);
+    digitalWrite (pumpLed, LOW);
+  }
+
+void status()    //read the set values and print to screen
+  {
+    Serial.print("Motion sensor 1 (Master BR) on Pin 2 reads: ");
+    Serial.println(digitalRead(motionSensor_1));      
+    Serial.print("Motion sensor 2 (Kids BR) on Pin 3 reads: ");
+    Serial.println(digitalRead(motionSensor_2));
+    Serial.print("Motion sensor 3 (Kitchen) on Pin 4 reads: ");
+    Serial.println(digitalRead(motionSensor_3));
+    Serial.print("Pump relay reads: ");
+    Serial.println(digitalRead(relayPin));
+    Serial.print("Pump LED reads: ");
+    Serial.println(digitalRead(pumpLed));
+    delay (2000);
   }
